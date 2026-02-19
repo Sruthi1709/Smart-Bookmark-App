@@ -21,7 +21,7 @@ return (
   <div className="min-h-screen bg-red-200 flex items-center justify-center py-10">
     <div className="max-w-2xl w-full mx-auto px-4">
       {/* ADD: h-[80vh] and flex flex-col to fix the card size */}
-      <div className="bg-white rounded-xl shadow-lg p-8 h-[70vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-lg p-8 h-[80vh] flex flex-col">
         <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">My Bookmarks</h1>
         <AddBookmark initialBookmarks={bookmarks || []} />
       </div>
