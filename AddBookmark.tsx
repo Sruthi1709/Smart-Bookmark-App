@@ -24,6 +24,10 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
   
+  // User info for multi-user testing
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  // States for Edit Mode
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editUrl, setEditUrl] = useState('')
@@ -43,6 +47,9 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
     const startSubscription = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+
+      // Set user email for the welcome message
+      setUserEmail(user.email ?? 'User')
 
       channel = supabase
         .channel(`sync-channel-${user.id}`)
@@ -79,16 +86,24 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
       setMessage({ text: 'Fill in Title and URL', type: 'error' })
       return
     }
+    const normalizedUrl = url.trim().toLowerCase();
+    const existingBookmark = bookmarks.find(
+      (b) => b.url.toLowerCase() === normalizedUrl
+    );
 
-    // 2. CHECK IF TITLE EXISTS (New Logic)
-    const normalizedTitle = title.trim().toLowerCase()
-    const isDuplicate = bookmarks.some(b => b.title.toLowerCase() === normalizedTitle)
-
-    if (isDuplicate) {
+    if (existingBookmark) {
       setMessage({ 
-        text: 'Name already taken, choose another name', 
+        text: `URL already exists as: "${existingBookmark.title}"`, 
         type: 'error' 
       })
+      return
+    }
+    
+
+    // 2. Duplicate Title Check
+    const normalizedTitle = title.trim().toLowerCase()
+    if (bookmarks.some(b => b.title.toLowerCase() === normalizedTitle)) {
+      setMessage({ text: 'Bookmark already exists, choose another name', type: 'error' })
       return
     }
 
@@ -165,13 +180,19 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
   return (
     <div className="flex flex-col flex-1 overflow-hidden text-black">
       
-      {/* TOP ROW: MESSAGE AND SIGN OUT */}
+      {/* 1. TOP ROW: WELCOME/MESSAGES (LEFT) AND SIGN OUT (RIGHT) */}
       <div className="flex-none h-8 flex justify-between items-center mb-2 px-1">
         <div className="flex-1">
-          {message && (
+          {message ? (
             <span className={`text-sm font-bold ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
               {message.text}
             </span>
+          ) : (
+            userEmail && (
+              <span className="text-sm font-medium text-gray-600">
+                Welcome, <span className="font-bold text-blue-600">{userEmail}</span>
+              </span>
+            )
           )}
         </div>
         <button onClick={handleSignOut} className="text-sm font-bold text-red-600 hover:underline ml-4">
@@ -179,7 +200,7 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
         </button>
       </div>
 
-      {/* FORM SECTION */}
+      {/* 2. FORM SECTION */}
       <div className="flex-none space-y-4 mb-6">
         <div className="space-y-4">
           <input 
@@ -205,11 +226,12 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
         </div>
       </div>
 
-      {/* SCROLLABLE LIST SECTION */}
+      {/* 3. SCROLLABLE LIST SECTION */}
       <div className="flex-1 flex flex-col min-h-0 pt-4 border-t border-gray-300">
         <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">Your Saved Links</h2>
         
-        <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+        <div className={`flex-1 pr-2 space-y-3 custom-scrollbar ${bookmarks.length > 0 ?"overflow-y-auto" : ""
+        }`}>
           {bookmarks.length === 0 ? (
             <p className="text-sm text-gray-500 italic text-center py-10">No bookmarks found.</p>
           ) : (
@@ -217,15 +239,24 @@ export default function AddBookmark({ initialBookmarks = [] }: AddBookmarkProps)
               <div key={b.id} className="p-4 border rounded-xl bg-gray-50 flex flex-col gap-2 border-gray-200 shadow-sm">
                 {editingId === b.id ? (
                   <div className="space-y-2">
-                    <input 
-                      value={editTitle} 
-                      onChange={e => { setEditTitle(e.target.value); setEditError(null); }} 
-                      className="w-full p-2 border rounded text-xs text-black" 
+                   <input
+                      aria-label="Edit bookmark title"
+                      value={editTitle}
+                      onChange={(e) => {
+                        setEditTitle(e.target.value)
+                        setEditError(null)
+                    }}
+                    className="w-full p-2 border rounded text-xs text-black"
                     />
-                    <input 
-                      value={editUrl} 
-                      onChange={e => { setEditUrl(e.target.value); setEditError(null); }} 
-                      className="w-full p-2 border rounded text-xs text-black" 
+
+                    <input
+                      aria-label="Edit bookmark URL"
+                      value={editUrl}
+                      onChange={(e) => {
+                          setEditUrl(e.target.value)
+                          setEditError(null)
+                    }}
+                    className="w-full p-2 border rounded text-xs text-black"
                     />
                     
                     {editError && (

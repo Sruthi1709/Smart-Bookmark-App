@@ -9,15 +9,15 @@ export default function SignOutButton() {
   const supabase = createClient()
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (!error) {
-      // Clears the session and sends the user back to the login page
-      router.push('/') 
-      router.refresh()
-    } else {
-      console.error('Error signing out:', error.message)
-    }
+  const { error } = await supabase.auth.signOut()
+
+  if (error) {
+    console.error('Error signing out:', error.message)
+    return
   }
+
+  window.location.href = '/'
+}
 
   return (
     <button
