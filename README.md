@@ -38,7 +38,7 @@ A simple bookmark manager built with Next.js, Supabase, and Tailwind CSS. Users 
 
 Deploy to Vercel by connecting your GitHub repository. Set the environment variables in Vercel dashboard.
 
-Live URL: [Add your Vercel URL here]
+Live URL: (https://smart-bookmark-app-eco9.vercel.app/login)
 
 ## Problems and Solutions
 
