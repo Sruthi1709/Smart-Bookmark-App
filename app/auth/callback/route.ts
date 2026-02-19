@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   // if "next" is in search params, use it as the redirect URL, otherwise use home page
@@ -12,11 +12,11 @@ export async function GET(request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      // ✅ Use "origin" to ensure it redirects to the Vercel link, not localhost
-      return NextResponse.redirect(`${origin}${next}`)
+      // ✅ Using origin ensures it redirects back to your Vercel URL
+      return NextResponse.redirect(${origin}${next})
     }
   }
 
-  // If there's an error, send them back to the login/home page
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  // If there's an error, send them back to the login page
+  return NextResponse.redirect(${origin}/)
 }
