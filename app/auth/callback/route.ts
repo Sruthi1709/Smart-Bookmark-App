@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
     
     if (!error) {
       // ✅ Using origin ensures it redirects back to your Vercel URL
-      return NextResponse.redirect(${origin}${next})
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
   // If there's an error, send them back to the login page
-  return NextResponse.redirect(${origin}/)
+  return NextResponse.redirect(`${origin}/`)
 }
+
